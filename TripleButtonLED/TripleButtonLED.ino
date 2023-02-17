@@ -1,70 +1,86 @@
-#define BUTTON_PIN_1 3
-#define LED_PIN_1 11
-#define BUTTON_PIN_2 4
-#define LED_PIN_2 12
-#define BUTTON_PIN_3 5
-#define LED_PIN_3 13
+/*
+Button Controls
+*/
 
+// Include the Bounce2 library
+#include <Bounce2.h>
 
-byte lastButtonState1 = LOW;
-byte lastButtonState2 = LOW;
-byte lastButtonState3 = LOW;
-unsigned long debounceDuration = 50; // millis
-unsigned long lastTimeButton1StateChanged = 0;
-unsigned long lastTimeButton2StateChanged = 0;
-unsigned long lastTimeButton3StateChanged = 0;
+// Define pins for the buttons
+#define ON_OFF_BUTTON 3
+#define CHUP_BUTTON 4
+#define CHDOWN_BUTTON 5
+
+// Define pins for the LEDs
+#define ON_OFF_LED 11
+#define CHUP_LED 12
+#define CHDOWN_LED 13
+
+// Create Bounce instances for each button
+Bounce onOffButton = Bounce();
+Bounce chUpButton = Bounce();
+Bounce chDownButton = Bounce();
 
 
 void setup() {
+    // Start serial
     Serial.begin(9600);
-    pinMode(BUTTON_PIN_1, INPUT);
-    pinMode(LED_PIN_1, OUTPUT);
-    pinMode(BUTTON_PIN_2, INPUT);
-    pinMode(LED_PIN_2, OUTPUT);
-    pinMode(BUTTON_PIN_3, INPUT);
-    pinMode(LED_PIN_3, OUTPUT);
-}
 
+    // Attach the buttons to their pins
+    onOffButton.attach(ON_OFF_BUTTON, INPUT);
+    chUpButton.attach(CHUP_BUTTON, INPUT);
+    chDownButton.attach(CHDOWN_BUTTON, INPUT);
 
-void checkPush(int buttonPin, int ledPin, byte lastButtonState) {
-    if (digitalRead(buttonPin) == HIGH) {
-        Serial.println("Button pressed");
-        digitalWrite(ledPin, HIGH);
-    } else {
-        Serial.println("Button released");
-        digitalWrite(ledPin, LOW);
-    }
+    // Set debounce interval to 25ms
+    onOffButton.interval(25);
+    chUpButton.interval(25);
+    chDownButton.interval(25);
+
+    // Set the LEDs to output
+    pinMode(ON_OFF_LED, OUTPUT);
+    pinMode(CHUP_LED, OUTPUT);
+    pinMode(CHDOWN_LED, OUTPUT);
+
+    // Turn the LEDs off
+    digitalWrite(ON_OFF_LED, LOW);
+    digitalWrite(CHUP_LED, LOW);
+    digitalWrite(CHDOWN_LED, LOW);
+
+    // Print a message to the serial monitor
+    Serial.println("Ready!");
 }
 
 
 void loop() {
-    if (millis() - lastTimeButton1StateChanged > debounceDuration) {
-        byte buttonState1 = digitalRead(BUTTON_PIN_1);
-        if (buttonState1 != lastButtonState1) {
-            lastTimeButton1StateChanged = millis();
-            lastButtonState1 = buttonState1;
+    // Update the Bounce instances
+    onOffButton.update();
+    chUpButton.update();
+    chDownButton.update();
 
-            checkPush(BUTTON_PIN_1, LED_PIN_1, lastButtonState1);
-        }
+    // Call code if buttons transition from LOW to HIGH (pressed)
+    if (onOffButton.rose()) {
+        digitalWrite(ON_OFF_LED, HIGH);
+        Serial.println("On/Off button pressed");
+    }
+    if (chUpButton.rose()) {
+        digitalWrite(CHUP_LED, HIGH);
+        Serial.println("Channel Up button pressed");
+    }
+    if (chDownButton.rose()) {
+        digitalWrite(CHDOWN_LED, HIGH);
+        Serial.println("Channel Down button pressed");
     }
 
-    if (millis() - lastTimeButton2StateChanged > debounceDuration) {
-        byte buttonState2 = digitalRead(BUTTON_PIN_2);
-        if (buttonState2 != lastButtonState2) {
-            lastTimeButton2StateChanged = millis();
-            lastButtonState2 = buttonState2;
-
-            checkPush(BUTTON_PIN_2, LED_PIN_2, lastButtonState2);
-        }
+    // Turn the LEDs off if the buttons transition from HIGH to LOW (released)
+    if (onOffButton.fell()) {
+        digitalWrite(ON_OFF_LED, LOW);
+    }
+    if (chUpButton.fell()) {
+        digitalWrite(CHUP_LED, LOW);
+    }
+    if (chDownButton.fell()) {
+        digitalWrite(CHDOWN_LED, LOW);
     }
 
-    if (millis() - lastTimeButton3StateChanged > debounceDuration) {
-        byte buttonState3 = digitalRead(BUTTON_PIN_3);
-        if (buttonState3 != lastButtonState3) {
-            lastTimeButton3StateChanged = millis();
-            lastButtonState3 = buttonState3;
-
-            checkPush(BUTTON_PIN_3, LED_PIN_3, lastButtonState3);
-        }
-    }
+    // Wait 10ms before checking again
+    delay(10);
 }

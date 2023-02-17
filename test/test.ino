@@ -37,7 +37,12 @@ void loop() {
     // Call code if button transitions from LOW to HIGH
     if (b.rose()) {
         ledState = !ledState;
-        digitalWrite(LED_PIN, ledState);
+        digitalWrite(LED_PIN, HIGH);
         Serial.println("Button pressed");
+    }
+
+    if (b.fell()) {
+        digitalWrite(LED_PIN, LOW);
+        Serial.println("Button released");
     }
 }

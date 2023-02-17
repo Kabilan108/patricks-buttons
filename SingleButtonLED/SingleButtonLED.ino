@@ -14,6 +14,16 @@ void setup() {
 }
 
 
+void checkPush(int pin) {
+    if (digitalRead(pin) == HIGH) {
+        Serial.println("Button pressed");
+        digitalWrite(LED_PIN, HIGH);
+    } else {
+        Serial.println("Button released");
+        digitalWrite(LED_PIN, LOW);
+    }
+}
+
 void loop() {
     if (millis() - lastTimeButtonStateChanged > debounceDuration) {
         byte buttonState = digitalRead(BUTTON_PIN);
@@ -21,13 +31,8 @@ void loop() {
             lastTimeButtonStateChanged = millis();
             lastButtonState = buttonState;
 
-            if (buttonState == LOW) {
-                // do an action, for example print on Serial
-                Serial.println("Button released");
-                digitalWrite(LED_PIN, LOW);
-            } else{
-                digitalWrite(LED_PIN, HIGH);
-            }
+            checkPush(BUTTON_PIN);
         }
     }
 }
+

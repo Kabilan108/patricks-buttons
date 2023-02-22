@@ -1,6 +1,7 @@
 /* ESP Server receive and parse JSON
  
 */
+#include <Arduino.h>
 #include "WiFiEsp.h"
 #include <ArduinoJson.h>
 

@@ -1,21 +1,25 @@
 /*
-Button Controls
+BUTTON CONTROLS
+
+This sketch implements the control of buttons and LEDS using the Bounce2
+library to perform debouncing. It serves as a proof of concept for the
+button control for the project.
 */
 
-// Include the Bounce2 library
+// Libraries
+#include <Arduino.h>
 #include <Bounce2.h>
 
-// Define pins for the buttons
-#define ON_OFF_BUTTON 3
-#define CHUP_BUTTON 4
-#define CHDOWN_BUTTON 5
+// Define constants
+#define BUTTON_ON_OFF 3
+#define BUTTON_CH_UP 4
+#define BUTTON_CH_DOWN 5
+#define LED_ON_OFF 11
+#define LED_CH_UP 12
+#define LED_CH_DOWN 13
+#define BAUD_RATE 9600
 
-// Define pins for the LEDs
-#define ON_OFF_LED 11
-#define CHUP_LED 12
-#define CHDOWN_LED 13
-
-// Create Bounce instances for each button
+// Button objects
 Bounce onOffButton = Bounce();
 Bounce chUpButton = Bounce();
 Bounce chDownButton = Bounce();
@@ -23,12 +27,12 @@ Bounce chDownButton = Bounce();
 
 void setup() {
     // Start serial
-    Serial.begin(9600);
-
+    Serial.begin(BAUD_RATE);
+    
     // Attach the buttons to their pins
-    onOffButton.attach(ON_OFF_BUTTON, INPUT);
-    chUpButton.attach(CHUP_BUTTON, INPUT);
-    chDownButton.attach(CHDOWN_BUTTON, INPUT);
+    onOffButton.attach(BUTTON_ON_OFF, INPUT);
+    chUpButton.attach(BUTTON_CH_UP, INPUT);
+    chDownButton.attach(BUTTON_CH_DOWN, INPUT);
 
     // Set debounce interval to 25ms
     onOffButton.interval(25);
@@ -36,16 +40,16 @@ void setup() {
     chDownButton.interval(25);
 
     // Set the LEDs to output
-    pinMode(ON_OFF_LED, OUTPUT);
-    pinMode(CHUP_LED, OUTPUT);
-    pinMode(CHDOWN_LED, OUTPUT);
+    pinMode(LED_ON_OFF, OUTPUT);
+    pinMode(LED_CH_UP, OUTPUT);
+    pinMode(LED_CH_DOWN, OUTPUT);
 
     // Turn the LEDs off
-    digitalWrite(ON_OFF_LED, LOW);
-    digitalWrite(CHUP_LED, LOW);
-    digitalWrite(CHDOWN_LED, LOW);
+    digitalWrite(LED_ON_OFF, LOW);
+    digitalWrite(LED_CH_UP, LOW);
+    digitalWrite(LED_CH_DOWN, LOW);
 
-    // Print a message to the serial monitor
+    // Print message to serial monitor
     Serial.println("Ready!");
 }
 
@@ -58,27 +62,27 @@ void loop() {
 
     // Call code if buttons transition from LOW to HIGH (pressed)
     if (onOffButton.rose()) {
-        digitalWrite(ON_OFF_LED, HIGH);
+        digitalWrite(LED_ON_OFF, HIGH);
         Serial.println("On/Off button pressed");
     }
     if (chUpButton.rose()) {
-        digitalWrite(CHUP_LED, HIGH);
+        digitalWrite(LED_CH_UP, HIGH);
         Serial.println("Channel Up button pressed");
     }
     if (chDownButton.rose()) {
-        digitalWrite(CHDOWN_LED, HIGH);
+        digitalWrite(LED_CH_DOWN, HIGH);
         Serial.println("Channel Down button pressed");
     }
 
     // Turn the LEDs off if the buttons transition from HIGH to LOW (released)
     if (onOffButton.fell()) {
-        digitalWrite(ON_OFF_LED, LOW);
+        digitalWrite(LED_ON_OFF, LOW);
     }
     if (chUpButton.fell()) {
-        digitalWrite(CHUP_LED, LOW);
+        digitalWrite(LED_CH_UP, LOW);
     }
     if (chDownButton.fell()) {
-        digitalWrite(CHDOWN_LED, LOW);
+        digitalWrite(LED_CH_DOWN, LOW);
     }
 
     // Wait 10ms before checking again

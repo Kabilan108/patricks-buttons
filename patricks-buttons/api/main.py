@@ -1,31 +1,11 @@
 """
-API Wrapper for interacting with TV provider's API
+Main script for Patrick's Buttons API
 """
 
-# Imports
-from fastapi import FastAPI
-
-# Create FastAPI instance
-app = FastAPI()
+from decouple import config
+import uvicorn
 
 
-@app.get("/")
-def read_root():
-    return "Home"
-
-@app.get("/on-off")
-def onoff():
-    return "On/Off"
-
-@app.get("/channel-up")
-def chup():
-    return "Channel Up"
-
-@app.get("/channel-down")
-def chdown():
-    return "Channel Down"
-
-
-# if __name__ == "__main__":
-#     import uvicorn
-#     uvicorn.run(app, host="192.168.6.216", port=80, reload=True)
+if __name__ == "__main__":
+    HOST, PORT = config("HOST"), int(config("PORT"))
+    uvicorn.run("api:app", host=HOST, port=PORT, reload=True)

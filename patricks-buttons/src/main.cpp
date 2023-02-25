@@ -15,10 +15,9 @@
 #define ONOFF_BTN  4
 #define RX         5
 #define TX         6
-#define CHDOWN_LED 8
-#define CHUP_LED   9
-#define ONOFF_LED  10
-#define ERROR      11
+#define CHDOWN_LED 9
+#define CHUP_LED   10
+#define ONOFF_LED  11
 #define CONNECTED  12
 
 #define BAUD_RATE 9600                    // baud rate for serial communication
@@ -31,16 +30,14 @@ const String port     = "80";             // Port
 
 SoftwareSerial ESP8266(RX,TX);            // Software serial for ESP8266
 
-int AT_cmd_time;                          // AT command time
-boolean AT_cmd_flag = false;              // AT command result
 const unsigned int writeInterval = 5000;  // write interval (in ms)
 
 Bounce onOffButton = Bounce();            // on/off button
 Bounce chUpButton = Bounce();             // channel up button
 Bounce chDownButton = Bounce();           // channel down button
 
-String request = "";
-void sendAT(String cmd, int timeout, char readReply[]);
+// void sendAT(String cmd, int timeout, char readReply[]);
+void sendAT(String cmd, int timeout, String readReply);
 void sendRequest(String request);
 
 
@@ -54,14 +51,12 @@ void setup() {
 
     // LED pin modes
     pinMode(CONNECTED, OUTPUT);
-    pinMode(ERROR, OUTPUT);
     pinMode(ONOFF_LED, OUTPUT);
     pinMode(CHUP_LED, OUTPUT);
     pinMode(CHDOWN_LED, OUTPUT);
 
     // Turn the LEDs off
     digitalWrite(CONNECTED, LOW);
-    digitalWrite(ERROR, LOW);
     digitalWrite(ONOFF_LED, LOW);
     digitalWrite(CHUP_LED, LOW);
     digitalWrite(CHDOWN_LED, LOW);
@@ -86,6 +81,8 @@ void setup() {
     Serial.println(ssid);
     sendAT("AT+CWJAP=\"" + ssid + "\",\"" + password + "\"", 30, "OK");
     digitalWrite(CONNECTED, HIGH);
+
+    Serial.println("Setup complete. Ready to go!");
 }
 
 
@@ -101,14 +98,17 @@ void loop() {
     if (onOffButton.rose()) {
         digitalWrite(ONOFF_LED, HIGH);
         Serial.println("On/Off button pressed");
+        sendRequest("on-off");
     }
     if (chUpButton.rose()) {
         digitalWrite(CHUP_LED, HIGH);
         Serial.println("Channel Up button pressed");
+        sendRequest("channel-up");
     }
     if (chDownButton.rose()) {
         digitalWrite(CHDOWN_LED, HIGH);
         Serial.println("Channel Down button pressed");
+        sendRequest("channel-down");
     }
 
     // Turn the LEDs off if the buttons transition from HIGH to LOW (released)
@@ -122,50 +122,14 @@ void loop() {
         digitalWrite(CHDOWN_LED, LOW);
     }
 
-    request = "";
-    sendRequest(request);
-
-
-    // Create URL for the request
-    // String url = "GET /write/";
-    // url += apiKey;
-    // url += "?module1=";
-    // url += random(10, 100);
-    // String url = "GET / HTTP/1.1\r\nHost: ";
-    // url += host;
-    // url += "\r\n";
-    // url += "Connection: close\r\n\r\n";
-    // String url = "GET /"+ request + " HTTP/1.1\r\nHost: " + host + "\r\nConnection: close\r\n\r\n";
-    // Serial.println("*****************************************************");
-    // Serial.println("***              Open TCP connection              ***");
-    
-    // // Open TCP connection
-    // sendAT("AT+CIPMUX=1", 10, "OK");
-
-    // // Start TCP connection
-    // sendAT("AT+CIPSTART=0,\"TCP\",\"" + host +"\"," + port, 20, "OK");
-
-    // // Send data
-    // sendAT("AT+CIPSEND=0," + String(url.length() + 4), 10, ">");
-
-    // // Send URL
-    // Serial.print("***              requesting URL: ");
-    // Serial.println(url);
-    // AT.println(url);
-    // delay(2000);
-    // sendAT("AT+CIPCLOSE=0", 10, "OK");
-
-    // Serial.println("***              Close TCP connection             ***");
-    // Serial.println("*****************************************************");
-
-    // // Wait for writeInterval
     // delay(writeInterval);
 }
 
 
 // ################################ FUNCTIONS ################################
 
-void sendAT(String cmd, int timeout, char readReply[]) {
+// void sendAT(String cmd, int timeout, char readReply[]) {
+void sendAT(String cmd, int timeout, String readReply) {
     /*
     This function sends an AT command to the ESP8266 and waits for a response
     before returning a result.
@@ -176,9 +140,15 @@ void sendAT(String cmd, int timeout, char readReply[]) {
     Serial.println(cmd);
 
     // Send the AT command to the ESP8266 and wait for a response
+    int AT_cmd_time = 0;          // AT command time
+    boolean AT_cmd_flag = false;  // AT command result
+
+    char readReplyArr[readReply.length() + 1]; // Create a char array with the same length as readReply
+    readReply.toCharArray(readReplyArr, readReply.length() + 1); // Copy the content of readReply to the char array
+
     while (AT_cmd_time < timeout) {
         ESP8266.println(cmd);
-        if (ESP8266.find(readReply)) {
+        if (ESP8266.find(readReplyArr)) {
             AT_cmd_flag = true;
             break;
         }
@@ -192,10 +162,6 @@ void sendAT(String cmd, int timeout, char readReply[]) {
     } else {
         Serial.println("FAILED");
     }
-
-    // Reset the flag and time
-    AT_cmd_time = 0;
-    AT_cmd_flag = false;
 }
 
 void sendRequest(String request) {

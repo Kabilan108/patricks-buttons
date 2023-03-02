@@ -18,6 +18,7 @@ def select_service():
             "name": "service",
             "choices": [
                 "Spotify",
+                "Xfinity",
                 # "YouTube",
                 # "Netflix",
                 Choice(name="Quit", value="quit")

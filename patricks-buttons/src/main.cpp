@@ -25,7 +25,7 @@
 
 const String ssid     = "kabil";          // Wifi SSID
 const String password = "123456789";      // Wifi Password
-const String host     = "192.168.6.216";  // API host name
+const String host     = "192.168.175.216";// API host name
 const String port     = "80";             // Port
 
 SoftwareSerial ESP8266(RX,TX);            // Software serial for ESP8266

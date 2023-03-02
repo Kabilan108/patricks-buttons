@@ -5,13 +5,12 @@ API Wrapper for interacting with TV provider's API
 # Imports
 from fastapi import FastAPI
 from decouple import config
+import logging
 import os
 
 # Spotipy Imports
 from spotipy.oauth2 import SpotifyOAuth
 from spotipy import Spotify
-
-# YouTube Imports
 
 
 # Define environment variables
@@ -21,6 +20,14 @@ os.environ["SPOTIPY_REDIRECT_URI"] = config("SPOTIPY_REDIRECT_URI")  #type: igno
 
 # Authentication
 sp = Spotify(auth_manager=SpotifyOAuth(scope=config("SPOTIPY_SCOPE")))
+
+# Logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(levelname)s:     %(message)s',
+    filemode='w'
+)
+logger = logging.getLogger(__name__)
 
 
 class Service(FastAPI):
@@ -53,21 +60,25 @@ class Spotify(Service):
             PLAYBACK = sp.current_playback()['is_playing']  #type: ignore
             if PLAYBACK:
                 sp.pause_playback()
+                logging.info("Playback Paused")
                 return "Playback Paused"
             else:
                 sp.start_playback()
+                logging.info("Playback Resumed")
                 return "Playback Resumed"
         
         @self.get("/channel-up")
         def chup():
             """CHANNEL UP Endpoint: Next Song"""
             sp.next_track()
+            logging.info("Playing Next Song")
             return "Playing Next Song"
         
         @self.get("/channel-down")
         def chdown():
             """CHANNEL DOWN Endpoint: Previous Song"""
             sp.previous_track()
+            logging.info("Playing Previous Song")
             return "Playing Previous Song"
 
 
